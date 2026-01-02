@@ -20,6 +20,43 @@ function App() {
   const [joined, setJoined] = useState(false);
 
   useEffect(() => {
+    newSocket.on("offer", async ({ offer }) => {
+  console.log("Offer received, creating answer...");
+
+  // 🔹 create peer connection
+  peerConnection.current = new RTCPeerConnection(iceServers);
+
+  // 🔹 add local tracks
+  localStreamRef.current.getTracks().forEach(track => {
+    peerConnection.current.addTrack(track, localStreamRef.current);
+  });
+
+  // 🔹 send ICE candidates
+  peerConnection.current.onicecandidate = (event) => {
+    if (event.candidate) {
+      newSocket.emit("ice-candidate", {
+        roomId,
+        candidate: event.candidate,
+      });
+    }
+  };
+
+  // 🔹 set remote description (offer)
+  await peerConnection.current.setRemoteDescription(offer);
+
+  // 🔹 create ANSWER
+  const answer = await peerConnection.current.createAnswer();
+  await peerConnection.current.setLocalDescription(answer);
+
+  // 🔹 send answer back
+  newSocket.emit("answer", { roomId, answer });
+});
+
+newSocket.on("answer", async ({ answer }) => {
+  console.log("Answer received");
+  await peerConnection.current.setRemoteDescription(answer);
+});
+
     const newSocket = io("https://video-conferencing-app-4yjh.onrender.com");
 
     setSocket(newSocket);

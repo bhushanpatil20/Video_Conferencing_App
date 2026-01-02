@@ -24,6 +24,10 @@ io.on("connection", (socket) => {
   socket.to(roomId).emit("offer", { offer });
 });
 
+socket.on("answer", ({ roomId, answer }) => {
+  socket.to(roomId).emit("answer", { answer });
+});
+
   console.log("User connected:", socket.id);
 
   socket.on("join-room", (roomId) => {
