@@ -1,57 +1,87 @@
-import React, { useEffect, useRef } from "react";
+import React, { useEffect, useRef, useState } from "react";
 import { io } from "socket.io-client";
 
-const BACKEND_URL = "https://video-conferencing-app-4yjh.onrender.com";
+const BACKEND_URL = "https://YOUR-RENDER-URL.onrender.com";
 
 function App() {
   const videoRef = useRef(null);
+  const [socket, setSocket] = useState(null);
+  const [roomId, setRoomId] = useState("");
+  const [joined, setJoined] = useState(false);
 
   useEffect(() => {
-    // 1️⃣ Connect to backend
-    const socket = io(BACKEND_URL);
+    const newSocket = io(BACKEND_URL, {
+  transports: ["websocket"],
+});
 
-    socket.on("connect", () => {
-      console.log("Connected to backend with socket id:", socket.id);
+    setSocket(newSocket);
+
+    newSocket.on("connect", () => {
+      console.log("Connected:", newSocket.id);
     });
 
-    socket.on("disconnect", () => {
-      console.log("Disconnected from backend");
+    newSocket.on("user-joined", (id) => {
+      console.log("Another user joined:", id);
     });
 
-    // 2️⃣ Get camera
+    return () => newSocket.disconnect();
+  }, []);
+
+  // 🎥 Start camera ONLY after join
+  useEffect(() => {
+    if (!joined) return;
+
     async function getCamera() {
       try {
         const stream = await navigator.mediaDevices.getUserMedia({
           video: true,
           audio: true,
         });
-        videoRef.current.srcObject = stream;
+
+        if (videoRef.current) {
+          videoRef.current.srcObject = stream;
+        }
       } catch (err) {
         console.error("Camera error:", err);
       }
     }
 
     getCamera();
+  }, [joined]);
 
-    // cleanup
-    return () => {
-      socket.disconnect();
-    };
-  }, []);
+  const joinRoom = () => {
+    if (roomId && socket) {
+      socket.emit("join-room", roomId);
+      setJoined(true);
+    }
+  };
 
   return (
     <div style={{ textAlign: "center", marginTop: "40px" }}>
-      <h2>Video Conferencing App</h2>
-      <video
-        ref={videoRef}
-        autoPlay
-        muted
-        playsInline
-        style={{ width: "60%", border: "2px solid black" }}
-      />
+      {!joined ? (
+        <>
+          <h2>Join Room</h2>
+          <input
+            value={roomId}
+            onChange={(e) => setRoomId(e.target.value)}
+            placeholder="Enter Room ID"
+          />
+          <button onClick={joinRoom}>Join</button>
+        </>
+      ) : (
+        <>
+          <h2>Room: {roomId}</h2>
+          <video
+            ref={videoRef}
+            autoPlay
+            muted
+            playsInline
+            style={{ width: "60%", border: "2px solid black" }}
+          />
+        </>
+      )}
     </div>
   );
 }
 
 export default App;
-

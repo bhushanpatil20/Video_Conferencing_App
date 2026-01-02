@@ -14,7 +14,9 @@ const io = new Server(server, {
   cors: {
     origin: "*",
   },
+  transports: ["websocket"],
 });
+
 
 // Socket connection
 io.on("connection", (socket) => {
