@@ -40,6 +40,37 @@ This project is being developed as a placement-oriented system design and full-s
 - Socket.IO server handles signaling (offer, answer, ICE candidates)
 - Media streams flow directly between clients for low latency
 
+Frontend (React - Vercel)
+|
+| Socket.IO (Signaling)
+|
+Backend (Node + Express - Render)
+|
+| WebRTC (P2P Media)
+|
+Peer ↔ Peer
+
+---
+
+## 🔑 Key Engineering Concepts
+
+- WebRTC offer/answer model
+- ICE candidate exchange
+- STUN/TURN servers for firewall and NAT traversal
+- MediaStreamTrack control for mute/unmute and camera toggle
+- Screen sharing using `RTCRtpSender.replaceTrack()`
+- React state and lifecycle management
+- Production deployment and environment variables
+
+---
+
+## 🛠️ Local Setup
+
+### 1️⃣ Clone the repository
+```bash
+git clone https://github.com/<your-username>/<repository-name>.git
+cd <repository-name>
+
 ---
 
 ## 🌍 Live Backend
@@ -54,3 +85,8 @@ This project is being developed as a placement-oriented system design and full-s
 cd backend
 npm install
 node server.js
+
+---
+
+🌐 Environment Variables
+REACT_APP_BACKEND_URL=https://video-conferencing-app-4yjh.onrender.com
