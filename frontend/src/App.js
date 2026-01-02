@@ -28,33 +28,31 @@ export default function App() {
 
   const [roomId, setRoomId] = useState("");
   const [joined, setJoined] = useState(false);
-  const [isCaller, setIsCaller] = useState(false);
 
   /* ---------------- SOCKET ---------------- */
   useEffect(() => {
     socketRef.current = io(BACKEND_URL);
 
-    socketRef.current.on("connect", () => {
-      console.log("Connected:", socketRef.current.id);
-    });
-
     socketRef.current.on("room-ready", async () => {
-      console.log("Room ready → I am caller");
-      setIsCaller(true);
-      await createPeer(true);
+      console.log("🔥 room-ready → creating offer");
+      await createPeer();
+      const offer = await peerRef.current.createOffer();
+      await peerRef.current.setLocalDescription(offer);
+      socketRef.current.emit("offer", { roomId, offer });
     });
 
     socketRef.current.on("offer", async ({ offer }) => {
-      console.log("Offer received");
-      await createPeer(false);
+      console.log("📩 offer received");
+      await createPeer();
       await peerRef.current.setRemoteDescription(offer);
+
       const answer = await peerRef.current.createAnswer();
       await peerRef.current.setLocalDescription(answer);
       socketRef.current.emit("answer", { roomId, answer });
     });
 
     socketRef.current.on("answer", async ({ answer }) => {
-      console.log("Answer received");
+      console.log("✅ answer received");
       await peerRef.current.setRemoteDescription(answer);
     });
 
@@ -73,22 +71,24 @@ export default function App() {
       video: true,
       audio: true,
     });
+
     localStreamRef.current = stream;
     localVideoRef.current.srcObject = stream;
   };
 
   /* ---------------- PEER ---------------- */
-  const createPeer = async (caller) => {
+  const createPeer = async () => {
     if (peerRef.current) return;
 
     peerRef.current = new RTCPeerConnection(ICE_SERVERS);
 
+    // add local tracks FIRST
     localStreamRef.current.getTracks().forEach((track) => {
       peerRef.current.addTrack(track, localStreamRef.current);
     });
 
     peerRef.current.ontrack = (event) => {
-      console.log("Remote track received");
+      console.log("🎥 remote stream received");
       remoteVideoRef.current.srcObject = event.streams[0];
     };
 
@@ -100,29 +100,14 @@ export default function App() {
         });
       }
     };
-
-    if (caller) {
-      const offer = await peerRef.current.createOffer();
-      await peerRef.current.setLocalDescription(offer);
-      socketRef.current.emit("offer", { roomId, offer });
-    }
   };
 
   /* ---------------- JOIN ---------------- */
   const joinRoom = async () => {
-  console.log("JOIN BUTTON CLICKED");
-
-  await startCamera();
-
-  console.log("CAMERA STARTED");
-
-  socketRef.current.emit("join-room", roomId);
-
-  console.log("JOIN ROOM EMITTED", roomId);
-
-  setJoined(true);
-};
-
+    await startCamera();
+    socketRef.current.emit("join-room", roomId);
+    setJoined(true);
+  };
 
   /* ---------------- UI ---------------- */
   return (
