@@ -1,10 +1,7 @@
 import React, { useEffect, useRef, useState } from "react";
 import { io } from "socket.io-client";
 
-const socket = io("https://video-conferencing-app-4yjh.onrender.com", {
-  transports: ["websocket"],
-});
-
+/* ================= ICE SERVERS ================= */
 const ICE_SERVERS = {
   iceServers: [
     { urls: "stun:stun.relay.metered.ca:80" },
@@ -21,86 +18,101 @@ const ICE_SERVERS = {
   ],
 };
 
-const BACKEND_URL = "https://video-conferencing-app-4yjh.onrender.com";
+/* ================= SOCKET (ONLY ONCE) ================= */
+const socket = io("https://video-conferencing-app-4yjh.onrender.com", {
+  transports: ["websocket"],
+});
 
 function App() {
-  const isCallerRef = useRef(false);
+  /* ================= REFS ================= */
+  const socketRef = useRef(socket);
+  const peerRef = useRef(null);
+  const localStreamRef = useRef(null);
   const localVideoRef = useRef(null);
   const remoteVideoRef = useRef(null);
-  const localStreamRef = useRef(null);
-  const peerRef = useRef(null);
-  const socketRef = useRef(socket);
 
+  /* ================= STATE ================= */
   const [roomId, setRoomId] = useState("");
   const [joined, setJoined] = useState(false);
 
-  /* ---------- SOCKET ---------- */
+  /* ================= SOCKET EVENTS ================= */
   useEffect(() => {
-  // socketRef.current = io(BACKEND_URL);
-  socketRef.current.on("room-ready", async () => {
-  console.log("🔥 ROOM READY EVENT RECEIVED");
+    const s = socketRef.current;
 
-  await createPeer();
+    s.on("connect", () => {
+      console.log("Connected:", s.id);
+    });
 
-  const offer = await peerRef.current.createOffer();
-  await peerRef.current.setLocalDescription(offer);
-  console.log("OFFER SDP:", offer.sdp);
-  socketRef.current.emit("offer", { roomId, offer });
-});
+    // 🔥 ROOM READY → CREATE OFFER (ONLY HERE)
+    s.on("room-ready", async () => {
+      console.log("🔥 ROOM READY RECEIVED");
 
-  socketRef.current.on("offer", async ({ offer }) => {
-  console.log("Offer received → I am callee");
-  isCallerRef.current = false;
+      await createPeer();
 
-  await createPeer();
+      const offer = await peerRef.current.createOffer();
+      await peerRef.current.setLocalDescription(offer);
 
-  await peerRef.current.setRemoteDescription(offer);
+      s.emit("offer", { roomId, offer });
+    });
 
-  const answer = await peerRef.current.createAnswer();
-  await peerRef.current.setLocalDescription(answer);
-  console.log("OFFER SDP:", offer.sdp);
-  socketRef.current.emit("answer", { roomId, answer });
-});
+    // RECEIVE OFFER → CREATE ANSWER
+    s.on("offer", async ({ offer }) => {
+      console.log("📩 Offer received");
 
+      await createPeer();
+      await peerRef.current.setRemoteDescription(offer);
 
-    socketRef.current.on("answer", async ({ answer }) => {
-      console.log("Answer received");
+      const answer = await peerRef.current.createAnswer();
+      await peerRef.current.setLocalDescription(answer);
+
+      s.emit("answer", { roomId, answer });
+    });
+
+    // RECEIVE ANSWER
+    s.on("answer", async ({ answer }) => {
+      console.log("📩 Answer received");
       await peerRef.current.setRemoteDescription(answer);
     });
 
-    socketRef.current.on("ice-candidate", async ({ candidate }) => {
-      if (candidate) {
+    // RECEIVE ICE
+    s.on("ice-candidate", async ({ candidate }) => {
+      if (candidate && peerRef.current) {
         await peerRef.current.addIceCandidate(candidate);
       }
     });
 
-    return () => socketRef.current.disconnect();
+    return () => s.disconnect();
   }, [roomId]);
 
-  /* ---------- CAMERA ---------- */
+  /* ================= CAMERA ================= */
   const startCamera = async () => {
     const stream = await navigator.mediaDevices.getUserMedia({
       video: true,
       audio: true,
     });
+
     localStreamRef.current = stream;
     localVideoRef.current.srcObject = stream;
   };
 
-  /* ---------- PEER ---------- */
+  /* ================= PEER CONNECTION ================= */
   const createPeer = async () => {
     if (peerRef.current) return;
 
     peerRef.current = new RTCPeerConnection(ICE_SERVERS);
 
-    localStreamRef.current.getTracks().forEach(track =>
-      peerRef.current.addTrack(track, localStreamRef.current)
-    );
+    // Add local tracks
+    localStreamRef.current.getTracks().forEach((track) => {
+      peerRef.current.addTrack(track, localStreamRef.current);
+    });
 
+    // Receive remote stream
     peerRef.current.ontrack = (event) => {
+      console.log("🎥 Remote track received");
       remoteVideoRef.current.srcObject = event.streams[0];
     };
 
+    // ICE candidates
     peerRef.current.onicecandidate = (event) => {
       if (event.candidate) {
         socketRef.current.emit("ice-candidate", {
@@ -111,16 +123,16 @@ function App() {
     };
   };
 
-  /* ---------- JOIN ---------- */
- const joinRoom = async () => {
-  console.log("JOINING ROOM:", roomId);
+  /* ================= JOIN ROOM ================= */
+  const joinRoom = async () => {
+    console.log("JOINING ROOM:", roomId.trim());
 
-  await startCamera();
-  socketRef.current.emit("join-room", roomId.trim());
-  setJoined(true);
-};
+    await startCamera();
+    socketRef.current.emit("join-room", roomId.trim());
+    setJoined(true);
+  };
 
-  /* ---------- UI ---------- */
+  /* ================= UI ================= */
   return (
     <div style={{ textAlign: "center", marginTop: 40 }}>
       {!joined ? (
@@ -135,10 +147,22 @@ function App() {
         </>
       ) : (
         <>
-          <h3>Local</h3>
-          <video ref={localVideoRef} autoPlay muted playsInline width="45%" />
-          <h3>Remote</h3>
-          <video ref={remoteVideoRef} autoPlay playsInline width="45%" />
+          <h3>Local Video</h3>
+          <video
+            ref={localVideoRef}
+            autoPlay
+            muted
+            playsInline
+            width="45%"
+          />
+
+          <h3>Remote Video</h3>
+          <video
+            ref={remoteVideoRef}
+            autoPlay
+            playsInline
+            width="45%"
+          />
         </>
       )}
     </div>
@@ -146,5 +170,3 @@ function App() {
 }
 
 export default App;
-
-  
