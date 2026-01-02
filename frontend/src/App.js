@@ -192,56 +192,219 @@ const stopScreenShare = () => {
 };
 
   /* ---------------- UI ---------------- */
-  return (
-    <div style={{ textAlign: "center", marginTop: 30 }}>
-      {!joined ? (
-        <>
-          <h2>Join Room</h2>
-          <input
-            value={roomId}
-            onChange={(e) => setRoomId(e.target.value)}
-            placeholder="Room ID"
+//   return (
+//     <div style={{ textAlign: "center", marginTop: 30 }}>
+//       {!joined ? (
+//         <>
+//           <h2>Join Room</h2>
+//           <input
+//             value={roomId}
+//             onChange={(e) => setRoomId(e.target.value)}
+//             placeholder="Room ID"
+//           />
+//           <button onClick={joinRoom}>Join</button>
+//           <button
+//   onClick={screenSharing ? stopScreenShare : startScreenShare}
+//   style={{ marginLeft: 10 }}
+// >
+//   {screenSharing ? "Stop Sharing 🛑" : "Share Screen 🖥️"}
+// </button>
+
+//         </>
+//       ) : (
+//   <>
+//     <h3>Local Video</h3>
+//     <video
+//       ref={localVideoRef}
+//       autoPlay
+//       muted
+//       playsInline
+//       width="45%"
+//     />
+
+//     <h3>Remote Video</h3>
+//     <video
+//       ref={remoteVideoRef}
+//       autoPlay
+//       playsInline
+//       width="45%"
+//     />
+
+//     <div style={{ marginTop: 20 }}>
+//       <button onClick={toggleMic}>
+//         {micOn ? "Mute Mic 🔇" : "Unmute Mic 🎤"}
+//       </button>
+
+//       <button onClick={toggleCamera} style={{ marginLeft: 10 }}>
+//         {camOn ? "Turn Camera Off 🎥" : "Turn Camera On 📷"}
+//       </button>
+//     </div>
+//   </>
+// )
+// }
+//     </div>
+//   );
+
+return (
+  <div style={styles.app}>
+    {!joined ? (
+      <div style={styles.joinBox}>
+        <h1 style={styles.title}>Video Conferencing App</h1>
+
+        <input
+          value={roomId}
+          onChange={(e) => setRoomId(e.target.value)}
+          placeholder="Enter Room ID"
+          style={styles.input}
+        />
+
+        <button onClick={joinRoom} style={styles.primaryBtn}>
+          Join Room
+        </button>
+      </div>
+    ) : (
+      <>
+        {/* Header */}
+        <div style={styles.header}>
+          <h3>Room: {roomId}</h3>
+        </div>
+
+        {/* Videos */}
+        <div style={styles.videoGrid}>
+          <video
+            ref={remoteVideoRef}
+            autoPlay
+            playsInline
+            style={styles.video}
           />
-          <button onClick={joinRoom}>Join</button>
-          <button
-  onClick={screenSharing ? stopScreenShare : startScreenShare}
-  style={{ marginLeft: 10 }}
->
-  {screenSharing ? "Stop Sharing 🛑" : "Share Screen 🖥️"}
-</button>
 
-        </>
-      ) : (
-  <>
-    <h3>Local Video</h3>
-    <video
-      ref={localVideoRef}
-      autoPlay
-      muted
-      playsInline
-      width="45%"
-    />
+          <video
+            ref={localVideoRef}
+            autoPlay
+            muted
+            playsInline
+            style={styles.localVideo}
+          />
+        </div>
 
-    <h3>Remote Video</h3>
-    <video
-      ref={remoteVideoRef}
-      autoPlay
-      playsInline
-      width="45%"
-    />
+        {/* Controls */}
+        <div style={styles.controls}>
+          <button onClick={toggleMic} style={styles.controlBtn}>
+            {micOn ? "🎤 Mute" : "🔇 Unmute"}
+          </button>
 
-    <div style={{ marginTop: 20 }}>
-      <button onClick={toggleMic}>
-        {micOn ? "Mute Mic 🔇" : "Unmute Mic 🎤"}
-      </button>
+          <button onClick={toggleCamera} style={styles.controlBtn}>
+            {camOn ? "🎥 Camera Off" : "📷 Camera On"}
+          </button>
 
-      <button onClick={toggleCamera} style={{ marginLeft: 10 }}>
-        {camOn ? "Turn Camera Off 🎥" : "Turn Camera On 📷"}
-      </button>
-    </div>
-  </>
-)
+          <button style={styles.leaveBtn}>⛔ Leave</button>
+        </div>
+      </>
+    )}
+  </div>
+);
 }
-    </div>
-  );
-}
+
+const styles = {
+  app: {
+    backgroundColor: "#0f172a",
+    color: "#e5e7eb",
+    minHeight: "100vh",
+    display: "flex",
+    flexDirection: "column",
+    alignItems: "center",
+  },
+
+  joinBox: {
+    marginTop: "20vh",
+    background: "#111827",
+    padding: "40px",
+    borderRadius: "12px",
+    boxShadow: "0 20px 40px rgba(0,0,0,0.4)",
+    textAlign: "center",
+  },
+
+  title: {
+    marginBottom: "20px",
+  },
+
+  input: {
+    padding: "12px",
+    width: "250px",
+    borderRadius: "6px",
+    border: "none",
+    marginBottom: "15px",
+    fontSize: "16px",
+  },
+
+  primaryBtn: {
+    padding: "12px 24px",
+    borderRadius: "6px",
+    border: "none",
+    background: "#3b82f6",
+    color: "white",
+    cursor: "pointer",
+    fontSize: "16px",
+  },
+
+  header: {
+    width: "100%",
+    padding: "15px",
+    textAlign: "center",
+    background: "#020617",
+  },
+
+  videoGrid: {
+    position: "relative",
+    display: "flex",
+    justifyContent: "center",
+    alignItems: "center",
+    marginTop: "20px",
+  },
+
+  video: {
+    width: "70vw",
+    maxHeight: "70vh",
+    borderRadius: "12px",
+    background: "black",
+  },
+
+  localVideo: {
+    position: "absolute",
+    bottom: "20px",
+    right: "20px",
+    width: "200px",
+    borderRadius: "10px",
+    border: "2px solid #3b82f6",
+    background: "black",
+  },
+
+  controls: {
+    position: "fixed",
+    bottom: "30px",
+    display: "flex",
+    gap: "15px",
+    background: "#020617",
+    padding: "15px 25px",
+    borderRadius: "50px",
+  },
+
+  controlBtn: {
+    padding: "10px 16px",
+    borderRadius: "999px",
+    border: "none",
+    background: "#1f2933",
+    color: "white",
+    cursor: "pointer",
+  },
+
+  leaveBtn: {
+    padding: "10px 18px",
+    borderRadius: "999px",
+    border: "none",
+    background: "#ef4444",
+    color: "white",
+    cursor: "pointer",
+  },
+};
+
