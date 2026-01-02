@@ -17,7 +17,9 @@ const ICE_SERVERS = {
   ],
 };
 
-const BACKEND_URL = "https://video-conferencing-app-4yjh.onrender.com";
+const BACKEND_URL =
+  process.env.REACT_APP_BACKEND_URL || "http://localhost:5000";
+
 
 export default function App() {
   const localVideoRef = useRef(null);
