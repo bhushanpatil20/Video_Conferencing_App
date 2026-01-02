@@ -20,6 +20,10 @@ const io = new Server(server, {
 
 // Socket connection
 io.on("connection", (socket) => {
+  socket.on("offer", ({ roomId, offer }) => {
+  socket.to(roomId).emit("offer", { offer });
+});
+
   console.log("User connected:", socket.id);
 
   socket.on("join-room", (roomId) => {
