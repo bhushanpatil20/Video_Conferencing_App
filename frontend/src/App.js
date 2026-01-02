@@ -1,9 +1,33 @@
 import React, { useEffect, useRef, useState } from "react";
 import { io } from "socket.io-client";
 
-const iceServers = {
-  iceServers: [{ urls: "stun:stun.l.google.com:19302" }],
-};
+var myPeerConnection = new RTCPeerConnection({
+  iceServers: [
+      {
+        urls: "stun:stun.relay.metered.ca:80",
+      },
+      {
+        urls: "turn:global.relay.metered.ca:80",
+        username: "e18d81096242f7d0c0dbd194",
+        credential: "I6SLjCDUbeI0mvUa",
+      },
+      {
+        urls: "turn:global.relay.metered.ca:80?transport=tcp",
+        username: "e18d81096242f7d0c0dbd194",
+        credential: "I6SLjCDUbeI0mvUa",
+      },
+      {
+        urls: "turn:global.relay.metered.ca:443",
+        username: "e18d81096242f7d0c0dbd194",
+        credential: "I6SLjCDUbeI0mvUa",
+      },
+      {
+        urls: "turns:global.relay.metered.ca:443?transport=tcp",
+        username: "e18d81096242f7d0c0dbd194",
+        credential: "I6SLjCDUbeI0mvUa",
+      },
+  ],
+});
 
 const BACKEND_URL = "https://video-conferencing-app-4yjh.onrender.com";
 
