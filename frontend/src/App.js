@@ -2,126 +2,124 @@ import React, { useEffect, useRef, useState } from "react";
 import { io } from "socket.io-client";
 
 const iceServers = {
-  iceServers: [
-    { urls: "stun:stun.l.google.com:19302" },
-  ],
+  iceServers: [{ urls: "stun:stun.l.google.com:19302" }],
 };
 
-const BACKEND_URL = "https://YOUR-RENDER-URL.onrender.com";
+const BACKEND_URL = "https://video-conferencing-app-4yjh.onrender.com";
 
 function App() {
+  // 🔹 Refs
   const videoRef = useRef(null);
+  const remoteVideoRef = useRef(null);
   const peerConnection = useRef(null);
   const localStreamRef = useRef(null);
-  const remoteVideoRef = useRef(null);
 
+  // 🔹 State
   const [socket, setSocket] = useState(null);
   const [roomId, setRoomId] = useState("");
   const [joined, setJoined] = useState(false);
 
+  // 🔹 SOCKET SETUP
   useEffect(() => {
-    newSocket.on("offer", async ({ offer }) => {
-  console.log("Offer received, creating answer...");
-
-  // 🔹 create peer connection
-  peerConnection.current = new RTCPeerConnection(iceServers);
-
-  // 🔹 add local tracks
-  localStreamRef.current.getTracks().forEach(track => {
-    peerConnection.current.addTrack(track, localStreamRef.current);
-  });
-
-  // 🔹 send ICE candidates
-  peerConnection.current.onicecandidate = (event) => {
-    if (event.candidate) {
-      newSocket.emit("ice-candidate", {
-        roomId,
-        candidate: event.candidate,
-      });
-    }
-  };
-
-  // 🔹 set remote description (offer)
-  await peerConnection.current.setRemoteDescription(offer);
-
-  // 🔹 create ANSWER
-  const answer = await peerConnection.current.createAnswer();
-  await peerConnection.current.setLocalDescription(answer);
-
-  // 🔹 send answer back
-  newSocket.emit("answer", { roomId, answer });
-});
-
-newSocket.on("answer", async ({ answer }) => {
-  console.log("Answer received");
-  await peerConnection.current.setRemoteDescription(answer);
-});
-
-    const newSocket = io("https://video-conferencing-app-4yjh.onrender.com");
-
+    const newSocket = io(BACKEND_URL);
     setSocket(newSocket);
 
     newSocket.on("connect", () => {
       console.log("Connected:", newSocket.id);
     });
 
+    // USER JOINED → CREATE OFFER
     newSocket.on("user-joined", async () => {
-  console.log("Another user joined, creating offer...");
+      console.log("Another user joined, creating offer");
 
-  // 🔹 create peer connection
-  peerConnection.current = new RTCPeerConnection(iceServers);
+      peerConnection.current = new RTCPeerConnection(iceServers);
 
-  // 🔹 add local tracks
-  localStreamRef.current.getTracks().forEach(track => {
-    peerConnection.current.addTrack(track, localStreamRef.current);
-  });
+      localStreamRef.current.getTracks().forEach(track =>
+        peerConnection.current.addTrack(track, localStreamRef.current)
+      );
 
-  // 🔹 send ICE candidates
-  peerConnection.current.onicecandidate = (event) => {
-    if (event.candidate) {
-      newSocket.emit("ice-candidate", {
-        roomId,
-        candidate: event.candidate,
-      });
-    }
-  };
+      peerConnection.current.ontrack = event => {
+        remoteVideoRef.current.srcObject = event.streams[0];
+      };
 
-  // 🔹 create OFFER
-  const offer = await peerConnection.current.createOffer();
-  await peerConnection.current.setLocalDescription(offer);
+      peerConnection.current.onicecandidate = event => {
+        if (event.candidate) {
+          newSocket.emit("ice-candidate", {
+            roomId,
+            candidate: event.candidate,
+          });
+        }
+      };
 
-  // 🔹 send offer via signaling server
-  newSocket.emit("offer", { roomId, offer });
-});
+      const offer = await peerConnection.current.createOffer();
+      await peerConnection.current.setLocalDescription(offer);
+      newSocket.emit("offer", { roomId, offer });
+    });
 
+    // RECEIVE OFFER → CREATE ANSWER
+    newSocket.on("offer", async ({ offer }) => {
+      console.log("Offer received");
+
+      peerConnection.current = new RTCPeerConnection(iceServers);
+
+      localStreamRef.current.getTracks().forEach(track =>
+        peerConnection.current.addTrack(track, localStreamRef.current)
+      );
+
+      peerConnection.current.ontrack = event => {
+        remoteVideoRef.current.srcObject = event.streams[0];
+      };
+
+      peerConnection.current.onicecandidate = event => {
+        if (event.candidate) {
+          newSocket.emit("ice-candidate", {
+            roomId,
+            candidate: event.candidate,
+          });
+        }
+      };
+
+      await peerConnection.current.setRemoteDescription(offer);
+
+      const answer = await peerConnection.current.createAnswer();
+      await peerConnection.current.setLocalDescription(answer);
+      newSocket.emit("answer", { roomId, answer });
+    });
+
+    // RECEIVE ANSWER
+    newSocket.on("answer", async ({ answer }) => {
+      console.log("Answer received");
+      await peerConnection.current.setRemoteDescription(answer);
+    });
+
+    // RECEIVE ICE
+    newSocket.on("ice-candidate", async ({ candidate }) => {
+      if (candidate) {
+        await peerConnection.current.addIceCandidate(candidate);
+      }
+    });
 
     return () => newSocket.disconnect();
-  }, []);
+  }, [roomId]);
 
-  // 🎥 Start camera ONLY after join
+  // 🔹 CAMERA SETUP
   useEffect(() => {
     if (!joined) return;
 
-    async function getCamera() {
-      try {
-        const stream = await navigator.mediaDevices.getUserMedia({
-          video: true,
-          audio: true,
-        });
-        
-        localStreamRef.current = stream;
+    async function startCamera() {
+      const stream = await navigator.mediaDevices.getUserMedia({
+        video: true,
+        audio: true,
+      });
 
-        if (videoRef.current) {
-          videoRef.current.srcObject = stream;
-        }
-      } catch (err) {
-        console.error("Camera error:", err);
-      }
+      localStreamRef.current = stream;
+      videoRef.current.srcObject = stream;
     }
 
-    getCamera();
+    startCamera();
   }, [joined]);
 
+  // 🔹 JOIN ROOM
   const joinRoom = () => {
     if (roomId && socket) {
       socket.emit("join-room", roomId);
@@ -129,28 +127,25 @@ newSocket.on("answer", async ({ answer }) => {
     }
   };
 
+  // 🔹 UI
   return (
-    <div style={{ textAlign: "center", marginTop: "40px" }}>
+    <div style={{ textAlign: "center", marginTop: 40 }}>
       {!joined ? (
         <>
           <h2>Join Room</h2>
           <input
             value={roomId}
-            onChange={(e) => setRoomId(e.target.value)}
-            placeholder="Enter Room ID"
+            onChange={e => setRoomId(e.target.value)}
+            placeholder="Room ID"
           />
           <button onClick={joinRoom}>Join</button>
         </>
       ) : (
         <>
-          <h2>Room: {roomId}</h2>
-          <video
-            ref={videoRef}
-            autoPlay
-            muted
-            playsInline
-            style={{ width: "60%", border: "2px solid black" }}
-          />
+          <h2>Local Video</h2>
+          <video ref={videoRef} autoPlay muted playsInline width="45%" />
+          <h2>Remote Video</h2>
+          <video ref={remoteVideoRef} autoPlay playsInline width="45%" />
         </>
       )}
     </div>
@@ -158,3 +153,5 @@ newSocket.on("answer", async ({ answer }) => {
 }
 
 export default App;
+
+  
