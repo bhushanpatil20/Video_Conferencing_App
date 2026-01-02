@@ -10,9 +10,10 @@ function App() {
   const [joined, setJoined] = useState(false);
 
   useEffect(() => {
-    const newSocket = io(BACKEND_URL, {
-  transports: ["websocket"],
+    const newSocket = io("https://video-conferencing-app-4yjh.onrender.com", {
+  transports: ["polling", "websocket"],
 });
+
 
     setSocket(newSocket);
 

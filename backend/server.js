@@ -13,10 +13,10 @@ const server = http.createServer(app);
 const io = new Server(server, {
   cors: {
     origin: "*",
+    methods: ["GET", "POST"],
   },
-  transports: ["websocket"],
+  allowEIO3: true,
 });
-
 
 // Socket connection
 io.on("connection", (socket) => {
