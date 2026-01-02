@@ -34,9 +34,10 @@ socket.on("answer", ({ roomId, answer }) => {
   socket.join(roomId);
 
   const clients = await io.in(roomId).fetchSockets();
+  console.log("ROOM:", roomId, "CLIENT COUNT:", clients.length);
 
   if (clients.length === 2) {
-    // Tell ONLY the first user to start WebRTC
+    console.log("🔥 EMITTING room-ready");
     socket.to(roomId).emit("room-ready");
   }
 });

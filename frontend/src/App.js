@@ -32,22 +32,19 @@ function App() {
 
   /* ---------- SOCKET ---------- */
   useEffect(() => {
-    socketRef.current = io(BACKEND_URL);
-
-  socketRef.current.on("user-joined", async () => {
-  console.log("Peer joined → I am caller");
-  isCallerRef.current = true;
+  socketRef.current = io(BACKEND_URL);
+  socketRef.current.on("room-ready", async () => {
+  console.log("🔥 ROOM READY EVENT RECEIVED");
 
   await createPeer();
 
   const offer = await peerRef.current.createOffer();
   await peerRef.current.setLocalDescription(offer);
-
+  console.log("OFFER SDP:", offer.sdp);
   socketRef.current.emit("offer", { roomId, offer });
 });
 
-
-    socketRef.current.on("offer", async ({ offer }) => {
+  socketRef.current.on("offer", async ({ offer }) => {
   console.log("Offer received → I am callee");
   isCallerRef.current = false;
 
@@ -57,7 +54,7 @@ function App() {
 
   const answer = await peerRef.current.createAnswer();
   await peerRef.current.setLocalDescription(answer);
-
+  console.log("OFFER SDP:", offer.sdp);
   socketRef.current.emit("answer", { roomId, answer });
 });
 
