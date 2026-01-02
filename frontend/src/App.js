@@ -109,6 +109,7 @@ function App() {
 
   /* ---------- JOIN ---------- */
   const joinRoom = async () => {
+    console.log("JOINING ROOM:", JSON.stringify(roomId));
     await startCamera();
     socketRef.current.emit("join-room", roomId);
     setJoined(true);
