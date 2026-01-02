@@ -35,55 +35,47 @@ function App() {
   const [roomId, setRoomId] = useState("");
   const [joined, setJoined] = useState(false);
 
-  /* ================= SOCKET EVENTS ================= */
-  // eslint-disable-next-line react-hooks/exhaustive-deps
-  useEffect(() => {
-    const s = socketRef.current;
+ // eslint-disable-next-line react-hooks/exhaustive-deps
+useEffect(() => {
+  const s = socketRef.current;
 
-    s.on("connect", () => {
-      console.log("Connected:", s.id);
-    });
+  s.on("connect", () => {
+    console.log("Connected:", s.id);
+  });
 
-    // 🔥 ROOM READY → CREATE OFFER (ONLY HERE)
-    s.on("room-ready", async () => {
-      console.log("🔥 ROOM READY RECEIVED");
+  s.on("room-ready", async () => {
+    console.log("🔥 ROOM READY RECEIVED");
 
-      await createPeer();
+    await createPeer();
 
-      const offer = await peerRef.current.createOffer();
-      await peerRef.current.setLocalDescription(offer);
+    const offer = await peerRef.current.createOffer();
+    await peerRef.current.setLocalDescription(offer);
 
-      s.emit("offer", { roomId, offer });
-    });
+    s.emit("offer", { roomId, offer });
+  });
 
-    // RECEIVE OFFER → CREATE ANSWER
-    s.on("offer", async ({ offer }) => {
-      console.log("📩 Offer received");
+  s.on("offer", async ({ offer }) => {
+    await createPeer();
+    await peerRef.current.setRemoteDescription(offer);
 
-      await createPeer();
-      await peerRef.current.setRemoteDescription(offer);
+    const answer = await peerRef.current.createAnswer();
+    await peerRef.current.setLocalDescription(answer);
 
-      const answer = await peerRef.current.createAnswer();
-      await peerRef.current.setLocalDescription(answer);
+    s.emit("answer", { roomId, answer });
+  });
 
-      s.emit("answer", { roomId, answer });
-    });
+  s.on("answer", async ({ answer }) => {
+    await peerRef.current.setRemoteDescription(answer);
+  });
 
-    // RECEIVE ANSWER
-    s.on("answer", async ({ answer }) => {
-      console.log("📩 Answer received");
-      await peerRef.current.setRemoteDescription(answer);
-    });
+  s.on("ice-candidate", async ({ candidate }) => {
+    if (candidate && peerRef.current) {
+      await peerRef.current.addIceCandidate(candidate);
+    }
+  });
 
-    // RECEIVE ICE
-    s.on("ice-candidate", async ({ candidate }) => {
-      if (candidate && peerRef.current) {
-        await peerRef.current.addIceCandidate(candidate);
-      }
-    });
-
-    return () => s.disconnect();
-  }, [roomId]);
+  return () => s.off();
+}, [roomId]);
 
   /* ================= CAMERA ================= */
   const startCamera = async () => {
