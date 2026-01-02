@@ -36,6 +36,7 @@ function App() {
   const [joined, setJoined] = useState(false);
 
   /* ================= SOCKET EVENTS ================= */
+  // eslint-disable-next-line react-hooks/exhaustive-deps
   useEffect(() => {
     const s = socketRef.current;
 
