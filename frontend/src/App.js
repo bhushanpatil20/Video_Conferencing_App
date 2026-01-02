@@ -1,5 +1,6 @@
 import React, { useEffect, useRef, useState } from "react";
 import { io } from "socket.io-client";
+import "./App.css";
 
 const ICE_SERVERS = {
   iceServers: [
@@ -192,114 +193,95 @@ const stopScreenShare = () => {
 };
 
   /* ---------------- UI ---------------- */
-//   return (
-//     <div style={{ textAlign: "center", marginTop: 30 }}>
-//       {!joined ? (
-//         <>
-//           <h2>Join Room</h2>
-//           <input
-//             value={roomId}
-//             onChange={(e) => setRoomId(e.target.value)}
-//             placeholder="Room ID"
+
+// return (
+//   <div style={styles.app}>
+//     {!joined ? (
+//       <div style={styles.joinBox}>
+//         <h1 style={styles.title}>Video Conferencing App</h1>
+
+//         <input
+//           value={roomId}
+//           onChange={(e) => setRoomId(e.target.value)}
+//           placeholder="Enter Room ID"
+//           style={styles.input}
+//         />
+
+//         <button onClick={joinRoom} style={styles.primaryBtn}>
+//           Join Room
+//         </button>
+//       </div>
+//     ) : (
+//       <>
+//         {/* Header */}
+//         <div style={styles.header}>
+//           <h3>Room: {roomId}</h3>
+//         </div>
+
+//         {/* Videos */}
+//         <div style={styles.videoGrid}>
+//           <video
+//             ref={remoteVideoRef}
+//             autoPlay
+//             playsInline
+//             style={styles.video}
 //           />
-//           <button onClick={joinRoom}>Join</button>
-//           <button
-//   onClick={screenSharing ? stopScreenShare : startScreenShare}
-//   style={{ marginLeft: 10 }}
-// >
-//   {screenSharing ? "Stop Sharing 🛑" : "Share Screen 🖥️"}
-// </button>
 
-//         </>
-//       ) : (
-//   <>
-//     <h3>Local Video</h3>
-//     <video
-//       ref={localVideoRef}
-//       autoPlay
-//       muted
-//       playsInline
-//       width="45%"
-//     />
+//           <video
+//             ref={localVideoRef}
+//             autoPlay
+//             muted
+//             playsInline
+//             style={styles.localVideo}
+//           />
+//         </div>
 
-//     <h3>Remote Video</h3>
-//     <video
-//       ref={remoteVideoRef}
-//       autoPlay
-//       playsInline
-//       width="45%"
-//     />
+//         {/* Controls */}
+//         <div style={styles.controls}>
+//           <button onClick={toggleMic} style={styles.controlBtn}>
+//             {micOn ? "🎤 Mute" : "🔇 Unmute"}
+//           </button>
 
-//     <div style={{ marginTop: 20 }}>
-//       <button onClick={toggleMic}>
-//         {micOn ? "Mute Mic 🔇" : "Unmute Mic 🎤"}
-//       </button>
+//           <button onClick={toggleCamera} style={styles.controlBtn}>
+//             {camOn ? "🎥 Camera Off" : "📷 Camera On"}
+//           </button>
 
-//       <button onClick={toggleCamera} style={{ marginLeft: 10 }}>
-//         {camOn ? "Turn Camera Off 🎥" : "Turn Camera On 📷"}
-//       </button>
-//     </div>
-//   </>
-// )
+//           <button style={styles.leaveBtn}>⛔ Leave</button>
+//         </div>
+//       </>
+//     )}
+//   </div>
+// );
 // }
-//     </div>
-//   );
 
 return (
-  <div style={styles.app}>
+  <div className="app">
     {!joined ? (
-      <div style={styles.joinBox}>
-        <h1 style={styles.title}>Video Conferencing App</h1>
-
+      <div className="join-card">
+        <h1>Join a Room</h1>
         <input
           value={roomId}
           onChange={(e) => setRoomId(e.target.value)}
           placeholder="Enter Room ID"
-          style={styles.input}
         />
-
-        <button onClick={joinRoom} style={styles.primaryBtn}>
-          Join Room
-        </button>
+        <button onClick={joinRoom}>Join</button>
       </div>
     ) : (
-      <>
-        {/* Header */}
-        <div style={styles.header}>
-          <h3>Room: {roomId}</h3>
+      <div className="call-container">
+        <div className="videos">
+          <video ref={remoteVideoRef} autoPlay playsInline className="remote-video" />
+          <video ref={localVideoRef} autoPlay muted playsInline className="local-video" />
         </div>
 
-        {/* Videos */}
-        <div style={styles.videoGrid}>
-          <video
-            ref={remoteVideoRef}
-            autoPlay
-            playsInline
-            style={styles.video}
-          />
-
-          <video
-            ref={localVideoRef}
-            autoPlay
-            muted
-            playsInline
-            style={styles.localVideo}
-          />
-        </div>
-
-        {/* Controls */}
-        <div style={styles.controls}>
-          <button onClick={toggleMic} style={styles.controlBtn}>
-            {micOn ? "🎤 Mute" : "🔇 Unmute"}
+        <div className="controls">
+          <button onClick={toggleMic}>
+            {micOn ? "Mute 🎙️" : "Unmute 🔇"}
           </button>
-
-          <button onClick={toggleCamera} style={styles.controlBtn}>
-            {camOn ? "🎥 Camera Off" : "📷 Camera On"}
+          <button onClick={toggleCamera}>
+            {camOn ? "Camera Off 📷" : "Camera On 🎥"}
           </button>
-
-          <button style={styles.leaveBtn}>⛔ Leave</button>
         </div>
-      </>
+      </div>
     )}
   </div>
 );
