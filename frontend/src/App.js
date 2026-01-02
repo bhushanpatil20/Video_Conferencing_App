@@ -25,11 +25,13 @@ export default function App() {
   const localStreamRef = useRef(null);
   const peerRef = useRef(null);
   const socketRef = useRef(null);
+  const screenStreamRef = useRef(null);
 
   const [roomId, setRoomId] = useState("");
   const [joined, setJoined] = useState(false);
   const [micOn, setMicOn] = useState(true);
   const [camOn, setCamOn] = useState(true);
+  const [screenSharing, setScreenSharing] = useState(false);
 
 
   /* ---------------- SOCKET ---------------- */
@@ -137,7 +139,55 @@ const toggleCamera = () => {
   });
 };
 
+const startScreenShare = async () => {
+  try {
+    const screenStream = await navigator.mediaDevices.getDisplayMedia({
+      video: true,
+    });
 
+    screenStreamRef.current = screenStream;
+    setScreenSharing(true);
+
+    const screenTrack = screenStream.getVideoTracks()[0];
+
+    // Replace video track being sent to peer
+    const sender = peerRef.current
+      .getSenders()
+      .find((s) => s.track.kind === "video");
+
+    if (sender) {
+      sender.replaceTrack(screenTrack);
+    }
+
+    // Show screen locally
+    localVideoRef.current.srcObject = screenStream;
+
+    // When user stops screen sharing
+    screenTrack.onended = stopScreenShare;
+  } catch (err) {
+    console.error("Screen share error:", err);
+  }
+};
+
+const stopScreenShare = () => {
+  const cameraTrack = localStreamRef.current.getVideoTracks()[0];
+
+  const sender = peerRef.current
+    .getSenders()
+    .find((s) => s.track.kind === "video");
+
+  if (sender) {
+    sender.replaceTrack(cameraTrack);
+  }
+
+  localVideoRef.current.srcObject = localStreamRef.current;
+  setScreenSharing(false);
+
+  if (screenStreamRef.current) {
+    screenStreamRef.current.getTracks().forEach((t) => t.stop());
+    screenStreamRef.current = null;
+  }
+};
 
   /* ---------------- UI ---------------- */
   return (
@@ -151,6 +201,13 @@ const toggleCamera = () => {
             placeholder="Room ID"
           />
           <button onClick={joinRoom}>Join</button>
+          <button
+  onClick={screenSharing ? stopScreenShare : startScreenShare}
+  style={{ marginLeft: 10 }}
+>
+  {screenSharing ? "Stop Sharing 🛑" : "Share Screen 🖥️"}
+</button>
+
         </>
       ) : (
   <>
