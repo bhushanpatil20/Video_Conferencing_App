@@ -28,6 +28,9 @@ export default function App() {
 
   const [roomId, setRoomId] = useState("");
   const [joined, setJoined] = useState(false);
+  const [micOn, setMicOn] = useState(true);
+  const [camOn, setCamOn] = useState(true);
+
 
   /* ---------------- SOCKET ---------------- */
   useEffect(() => {
@@ -116,6 +119,25 @@ export default function App() {
   socketRef.current.emit("join-room", roomId);
 };
 
+const toggleMic = () => {
+  if (!localStreamRef.current) return;
+
+  localStreamRef.current.getAudioTracks().forEach(track => {
+    track.enabled = !track.enabled;
+    setMicOn(track.enabled);
+  });
+};
+
+const toggleCamera = () => {
+  if (!localStreamRef.current) return;
+
+  localStreamRef.current.getVideoTracks().forEach(track => {
+    track.enabled = !track.enabled;
+    setCamOn(track.enabled);
+  });
+};
+
+
 
   /* ---------------- UI ---------------- */
   return (
@@ -131,14 +153,36 @@ export default function App() {
           <button onClick={joinRoom}>Join</button>
         </>
       ) : (
-        <>
-          <h3>Local Video</h3>
-          <video ref={localVideoRef} autoPlay muted playsInline width="45%" />
+  <>
+    <h3>Local Video</h3>
+    <video
+      ref={localVideoRef}
+      autoPlay
+      muted
+      playsInline
+      width="45%"
+    />
 
-          <h3>Remote Video</h3>
-          <video ref={remoteVideoRef} autoPlay playsInline width="45%" />
-        </>
-      )}
+    <h3>Remote Video</h3>
+    <video
+      ref={remoteVideoRef}
+      autoPlay
+      playsInline
+      width="45%"
+    />
+
+    <div style={{ marginTop: 20 }}>
+      <button onClick={toggleMic}>
+        {micOn ? "Mute Mic 🔇" : "Unmute Mic 🎤"}
+      </button>
+
+      <button onClick={toggleCamera} style={{ marginLeft: 10 }}>
+        {camOn ? "Turn Camera Off 🎥" : "Turn Camera On 📷"}
+      </button>
+    </div>
+  </>
+)
+}
     </div>
   );
 }
