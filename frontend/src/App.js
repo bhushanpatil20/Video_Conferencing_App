@@ -65,16 +65,7 @@ export default function App() {
     return () => socketRef.current.disconnect();
   }, [roomId]);
 
-  /* ---------------- CAMERA ---------------- */
-  const startCamera = async () => {
-    const stream = await navigator.mediaDevices.getUserMedia({
-      video: true,
-      audio: true,
-    });
-
-    localStreamRef.current = stream;
-    localVideoRef.current.srcObject = stream;
-  };
+  /* ---------------
 
   /* ---------------- PEER ---------------- */
   const createPeer = async () => {
@@ -104,10 +95,27 @@ export default function App() {
 
   /* ---------------- JOIN ---------------- */
   const joinRoom = async () => {
-    await startCamera();
-    socketRef.current.emit("join-room", roomId);
-    setJoined(true);
-  };
+  console.log("JOIN CLICKED");
+
+  setJoined(true); // ✅ render video element FIRST
+
+  const stream = await navigator.mediaDevices.getUserMedia({
+    video: true,
+    audio: true,
+  });
+
+  localStreamRef.current = stream;
+
+  // wait for React to paint
+  setTimeout(() => {
+    if (localVideoRef.current) {
+      localVideoRef.current.srcObject = stream;
+    }
+  }, 0);
+
+  socketRef.current.emit("join-room", roomId);
+};
+
 
   /* ---------------- UI ---------------- */
   return (
