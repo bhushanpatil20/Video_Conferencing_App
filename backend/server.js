@@ -30,12 +30,17 @@ socket.on("answer", ({ roomId, answer }) => {
 
   console.log("User connected:", socket.id);
 
-  socket.on("join-room", (roomId) => {
-    socket.join(roomId);
-    console.log(`User ${socket.id} joined room ${roomId}`);
+  socket.on("join-room", async (roomId) => {
+  socket.join(roomId);
 
-    socket.to(roomId).emit("user-joined", socket.id);
-  });
+  const clients = await io.in(roomId).fetchSockets();
+
+  if (clients.length === 2) {
+    // Tell ONLY the first user to start WebRTC
+    socket.to(roomId).emit("room-ready");
+  }
+});
+
 
   socket.on("disconnect", () => {
     console.log("User disconnected:", socket.id);
