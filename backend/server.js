@@ -15,8 +15,8 @@ const io = new Server(server, {
     origin: "*",
     methods: ["GET", "POST"],
   },
-  allowEIO3: true,
 });
+
 
 // Socket connection
 io.on("connection", (socket) => {
