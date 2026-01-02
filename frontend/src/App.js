@@ -110,10 +110,19 @@ export default function App() {
 
   /* ---------------- JOIN ---------------- */
   const joinRoom = async () => {
-    await startCamera();
-    socketRef.current.emit("join-room", roomId);
-    setJoined(true);
-  };
+  console.log("JOIN BUTTON CLICKED");
+
+  await startCamera();
+
+  console.log("CAMERA STARTED");
+
+  socketRef.current.emit("join-room", roomId);
+
+  console.log("JOIN ROOM EMITTED", roomId);
+
+  setJoined(true);
+};
+
 
   /* ---------------- UI ---------------- */
   return (
