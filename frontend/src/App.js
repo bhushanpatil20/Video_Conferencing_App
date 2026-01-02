@@ -20,9 +20,9 @@ const ICE_SERVERS = {
 const BACKEND_URL = "https://video-conferencing-app-4yjh.onrender.com";
 
 function App() {
+  const isCallerRef = useRef(false);
   const localVideoRef = useRef(null);
   const remoteVideoRef = useRef(null);
-
   const localStreamRef = useRef(null);
   const peerRef = useRef(null);
   const socketRef = useRef(null);
@@ -34,22 +34,33 @@ function App() {
   useEffect(() => {
     socketRef.current = io(BACKEND_URL);
 
-    socketRef.current.on("user-joined", async () => {
-      console.log("Peer joined → creating offer");
-      await createPeer();
-      const offer = await peerRef.current.createOffer();
-      await peerRef.current.setLocalDescription(offer);
-      socketRef.current.emit("offer", { roomId, offer });
-    });
+  socketRef.current.on("user-joined", async () => {
+  console.log("Peer joined → I am caller");
+  isCallerRef.current = true;
+
+  await createPeer();
+
+  const offer = await peerRef.current.createOffer();
+  await peerRef.current.setLocalDescription(offer);
+
+  socketRef.current.emit("offer", { roomId, offer });
+});
+
 
     socketRef.current.on("offer", async ({ offer }) => {
-      console.log("Offer received");
-      await createPeer();
-      await peerRef.current.setRemoteDescription(offer);
-      const answer = await peerRef.current.createAnswer();
-      await peerRef.current.setLocalDescription(answer);
-      socketRef.current.emit("answer", { roomId, answer });
-    });
+  console.log("Offer received → I am callee");
+  isCallerRef.current = false;
+
+  await createPeer();
+
+  await peerRef.current.setRemoteDescription(offer);
+
+  const answer = await peerRef.current.createAnswer();
+  await peerRef.current.setLocalDescription(answer);
+
+  socketRef.current.emit("answer", { roomId, answer });
+});
+
 
     socketRef.current.on("answer", async ({ answer }) => {
       console.log("Answer received");
