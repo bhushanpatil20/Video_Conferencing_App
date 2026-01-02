@@ -1,6 +1,10 @@
 import React, { useEffect, useRef, useState } from "react";
 import { io } from "socket.io-client";
 
+const socket = io("https://video-conferencing-app-4yjh.onrender.com", {
+  transports: ["websocket"],
+});
+
 const ICE_SERVERS = {
   iceServers: [
     { urls: "stun:stun.relay.metered.ca:80" },
@@ -25,14 +29,14 @@ function App() {
   const remoteVideoRef = useRef(null);
   const localStreamRef = useRef(null);
   const peerRef = useRef(null);
-  const socketRef = useRef(null);
+  const socketRef = useRef(socket);
 
   const [roomId, setRoomId] = useState("");
   const [joined, setJoined] = useState(false);
 
   /* ---------- SOCKET ---------- */
   useEffect(() => {
-  socketRef.current = io(BACKEND_URL);
+  // socketRef.current = io(BACKEND_URL);
   socketRef.current.on("room-ready", async () => {
   console.log("🔥 ROOM READY EVENT RECEIVED");
 
@@ -108,12 +112,13 @@ function App() {
   };
 
   /* ---------- JOIN ---------- */
-  const joinRoom = async () => {
-    console.log("JOINING ROOM:", JSON.stringify(roomId));
-    await startCamera();
-    socketRef.current.emit("join-room", roomId);
-    setJoined(true);
-  };
+ const joinRoom = async () => {
+  console.log("JOINING ROOM:", roomId);
+
+  await startCamera();
+  socketRef.current.emit("join-room", roomId.trim());
+  setJoined(true);
+};
 
   /* ---------- UI ---------- */
   return (
