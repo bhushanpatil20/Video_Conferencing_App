@@ -115,6 +115,25 @@ body {
   height: var(--app-height);
 }
 
+.remote-video {
+  /* 1. Stop the video from sticking to the screen edges */
+  position: relative !important;
+  top: auto;
+  left: auto;
+
+  /* 2. Define a rigid size limit (Adjust 80vh to preferred size) */
+  height: 80vh; /* Means 80% of the screen height */
+  width: auto;  /* Width adjusts to keep the person from stretching */
+
+  /* 3. Center it on the page */
+  display: block;
+  margin: 20px auto;
+  
+  /* 4. Ensure no cropping */
+  object-fit: contain;
+  background-color: black; /* Visual border if ratio differs */
+}
+
 /* VIDEOS */
 .videos {
   width: 100%;
@@ -221,6 +240,10 @@ body {
   transform: scale(0.96);
 }
 
+
+
+
+
 /* =========================
    CONTROLS (Mobile Override)
    ========================= */
@@ -243,24 +266,6 @@ body {
   .controls button {
     padding: 12px 20px; /* Slightly larger touch target */
   }
-  .remote-video {
-  /* 1. Stop the video from sticking to the screen edges */
-  position: relative !important;
-  top: auto;
-  left: auto;
-
-  /* 2. Define a rigid size limit (Adjust 80vh to preferred size) */
-  height: 80vh; /* Means 80% of the screen height */
-  width: auto;  /* Width adjusts to keep the person from stretching */
-
-  /* 3. Center it on the page */
-  display: block;
-  margin: 20px auto;
-  
-  /* 4. Ensure no cropping */
-  object-fit: contain;
-  background-color: black; /* Visual border if ratio differs */
-}
 }
 
 
