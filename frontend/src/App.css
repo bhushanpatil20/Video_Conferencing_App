@@ -261,10 +261,4 @@ body {
   }
 }
 
-@supports (-webkit-touch-callout: none) {
-  .app {
-    min-height: -webkit-fill-available;
-  }
-}
-
 
