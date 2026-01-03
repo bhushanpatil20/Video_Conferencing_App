@@ -15,15 +15,17 @@
 }
 
 
-html, body, #root {
+html, body {
   width: 100%;
-  height: 100%;
-  overflow: hidden;
+  min-height: 100%;
+  overflow-x: hidden;
 }
 
-html, body {
-  height: 100%;
+#root {
+  width: 100%;
+  min-height: 100%;
 }
+
 
 @keyframes App-logo-spin {
   from {
@@ -46,14 +48,14 @@ body {
 
 /* APP WRAPPER */
 .app {
-  width: 100vw;
-  height: var(--app-height);
+  width: 100%;
+  min-height: 100dvh;
   background: linear-gradient(180deg, #0f172a, #020617);
   display: flex;
   justify-content: center;
   align-items: center;
-  overflow: hidden;
 }
+
 
 /* JOIN CARD */
 .join-card button {
@@ -112,7 +114,9 @@ body {
 .call-container {
   position: relative;
   width: 100%;
-  height: var(--app-height);
+  height: 100%;
+  max-height: 100dvh;
+  overflow: hidden;
 }
 
 /* VIDEOS */
@@ -128,7 +132,7 @@ body {
   background: black;
 }
 
-.local-video {
+/* .local-video {
   position: absolute;
   bottom: 90px;
   right: 16px;
@@ -138,20 +142,22 @@ body {
   border-radius: 12px;
   border: 2px solid #3b82f6;
   background: black;
+} */
+
+.local-video {
+  width: 90px;
+  height: 130px;
+  bottom: 90px;
 }
 
 /* CONTROLS */
 .controls {
-  position: absolute;
-  bottom: env(safe-area-inset-bottom, 20px);
+  position: fixed;
+  bottom: calc(env(safe-area-inset-bottom) + 12px);
   left: 50%;
   transform: translateX(-50%);
-  display: flex;
-  gap: 12px;
-  padding-bottom: 10px;
-  /* z-index: 10; */
+  z-index: 20;
 }
-
 /*animation: slideUp 0.4s ease-out;*/
 @keyframes slideUp {
   from {
@@ -255,3 +261,8 @@ body {
   }
 }
 
+@supports (-webkit-touch-callout: none) {
+  .app {
+    min-height: -webkit-fill-available;
+  }
+}
