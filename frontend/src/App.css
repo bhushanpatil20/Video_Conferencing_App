@@ -56,14 +56,27 @@ body {
 }
 
 /* JOIN CARD */
-.join-card {
-  background: #111827;
-  padding: 40px;
-  border-radius: 14px;
-  width: 320px;
-  text-align: center;
-  box-shadow: 0 20px 40px rgba(0,0,0,0.4);
+.join-card button {
+  width: 100%;
+  padding: 12px;
+  border-radius: 8px;
+  border: none;
+  background: #3b82f6;
+  color: white;
+  font-size: 16px;
+  cursor: pointer;
+  transition: background 0.25s ease, transform 0.15s ease;
 }
+
+.join-card button:hover {
+  background: #2563eb;
+  transform: translateY(-2px);
+}
+
+.join-card button:active {
+  transform: scale(0.97);
+}
+
 
 .join-card h1 {
   color: white;
@@ -135,6 +148,19 @@ body {
   display: flex;
   justify-content: center;
   gap: 16px;
+
+  animation: slideUp 0.4s ease-out;
+}
+
+@keyframes slideUp {
+  from {
+    transform: translateY(20px);
+    opacity: 0;
+  }
+  to {
+    transform: translateY(0);
+    opacity: 1;
+  }
 }
 
 .controls button {
@@ -145,8 +171,31 @@ body {
   color: white;
   font-size: 15px;
   cursor: pointer;
+  transition: background 0.25s ease, transform 0.15s ease;
 }
 
 .controls button:hover {
   background: #374151;
+  transform: translateY(-2px);
 }
+
+.controls button:active {
+  transform: scale(0.96);
+}
+
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+    transform: scale(0.98);
+  }
+  to {
+    opacity: 1;
+    transform: scale(1);
+  }
+}
+
+.remote-video,
+.local-video {
+  animation: fadeIn 0.4s ease-out;
+}
+
