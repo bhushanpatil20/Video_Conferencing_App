@@ -243,10 +243,10 @@ body {
   .controls button {
     padding: 12px 20px; /* Slightly larger touch target */
   }
+  .remote-video {
+    object-fit: contain;
+  }
 }
-
-
-
 
 
 @keyframes fadeIn {
@@ -294,7 +294,7 @@ body {
   .remote-video {
     width: 100%;
     height: 100%;
-    object-fit: cover;
+    object-fit: contain;
     border-radius: 0;
   }
 
