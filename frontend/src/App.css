@@ -141,7 +141,7 @@ body {
 }
 
 /* CONTROLS */
-.controls {
+/* .controls {
   position: absolute;
   bottom: env(safe-area-inset-bottom, 20px);
   left: 50%;
@@ -149,8 +149,18 @@ body {
   display: flex;
   gap: 12px;
   padding-bottom: 10px;
-  /* z-index: 10; */
-}
+} */
+
+/* Controls bar */
+  .controls {
+    /* Use calc to respect the phone's safe area (gesture bar) + extra space */
+    bottom: calc(env(safe-area-inset-bottom) + 30px); 
+    padding: 10px;
+    gap: 20px; /* Increased gap slightly for better touch targets */
+    display: flex; /* Ensures buttons stay in a row */
+    justify-content: center; /* Centers the buttons */
+    width: 100%; /* Ensures the container spans width for proper centering */
+  }
 
 /*animation: slideUp 0.4s ease-out;*/
 @keyframes slideUp {
