@@ -13,7 +13,7 @@ html, body, #root {
 html, body {
   height: 100%;
 }
-.App {
+/* .App {
   text-align: center;
 }
 
@@ -41,7 +41,7 @@ html, body {
 
 .App-link {
   color: #61dafb;
-}
+} */
 
 @keyframes App-logo-spin {
   from {
