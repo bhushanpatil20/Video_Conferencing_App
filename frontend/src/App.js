@@ -70,6 +70,19 @@ export default function App() {
       }
     });
 
+    socketRef.current.on("user-left", () => {
+  console.log("Peer left the call");
+
+  if (remoteVideoRef.current) {
+    remoteVideoRef.current.srcObject = null;
+  }
+
+  if (peerRef.current) {
+    peerRef.current.close();
+    peerRef.current = null;
+  }
+});
+
     return () => socketRef.current.disconnect();
   }, [roomId]);
 
@@ -105,7 +118,7 @@ export default function App() {
   const joinRoom = async () => {
   console.log("JOIN CLICKED");
 
-  setJoined(true); // ✅ render video element FIRST
+  setJoined(true); 
 
   const stream = await navigator.mediaDevices.getUserMedia({
     video: true,
@@ -123,6 +136,52 @@ export default function App() {
 
   socketRef.current.emit("join-room", roomId);
 };
+
+/*leave call*/
+const leaveCall = () => {
+  console.log("Leaving call...");
+
+  //  Notify peer
+  if (socketRef.current) {
+    socketRef.current.emit("leave-room", roomId);
+  }
+
+  //  Stop local media tracks
+  if (localStreamRef.current) {
+    localStreamRef.current.getTracks().forEach(track => track.stop());
+    localStreamRef.current = null;
+  }
+
+  //  Stop screen sharing if active
+  if (screenStreamRef?.current) {
+    screenStreamRef.current.getTracks().forEach(track => track.stop());
+    screenStreamRef.current = null;
+    setScreenSharing(false);
+  }
+
+  //  Close peer connection
+  if (peerRef.current) {
+    peerRef.current.ontrack = null;
+    peerRef.current.onicecandidate = null;
+    peerRef.current.close();
+    peerRef.current = null;
+  }
+
+  // Clear video elements
+  if (localVideoRef.current) {
+    localVideoRef.current.srcObject = null;
+  }
+  if (remoteVideoRef.current) {
+    remoteVideoRef.current.srcObject = null;
+  }
+
+  //  Reset UI state
+  setJoined(false);
+  setRoomId("");
+  setMicOn(true);
+  setCamOn(true);
+};
+
 
 const toggleMic = () => {
   if (!localStreamRef.current) return;
@@ -194,66 +253,6 @@ const stopScreenShare = () => {
 
   /* ---------------- UI ---------------- */
 
-// return (
-//   <div style={styles.app}>
-//     {!joined ? (
-//       <div style={styles.joinBox}>
-//         <h1 style={styles.title}>Video Conferencing App</h1>
-
-//         <input
-//           value={roomId}
-//           onChange={(e) => setRoomId(e.target.value)}
-//           placeholder="Enter Room ID"
-//           style={styles.input}
-//         />
-
-//         <button onClick={joinRoom} style={styles.primaryBtn}>
-//           Join Room
-//         </button>
-//       </div>
-//     ) : (
-//       <>
-//         {/* Header */}
-//         <div style={styles.header}>
-//           <h3>Room: {roomId}</h3>
-//         </div>
-
-//         {/* Videos */}
-//         <div style={styles.videoGrid}>
-//           <video
-//             ref={remoteVideoRef}
-//             autoPlay
-//             playsInline
-//             style={styles.video}
-//           />
-
-//           <video
-//             ref={localVideoRef}
-//             autoPlay
-//             muted
-//             playsInline
-//             style={styles.localVideo}
-//           />
-//         </div>
-
-//         {/* Controls */}
-//         <div style={styles.controls}>
-//           <button onClick={toggleMic} style={styles.controlBtn}>
-//             {micOn ? "🎤 Mute" : "🔇 Unmute"}
-//           </button>
-
-//           <button onClick={toggleCamera} style={styles.controlBtn}>
-//             {camOn ? "🎥 Camera Off" : "📷 Camera On"}
-//           </button>
-
-//           <button style={styles.leaveBtn}>⛔ Leave</button>
-//         </div>
-//       </>
-//     )}
-//   </div>
-// );
-// }
-
 return (
   <div className="app">
     {!joined ? (
@@ -280,6 +279,10 @@ return (
           <button onClick={toggleCamera}>
             {camOn ? "Camera Off 📷" : "Camera On 🎥"}
           </button>
+          <button onClick={leaveCall} style={styles.leaveBtn}>
+                  ⛔ Leave
+          </button>
+
         </div>
       </div>
     )}

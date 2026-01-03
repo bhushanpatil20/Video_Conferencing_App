@@ -17,13 +17,13 @@ const io = new Server(server, {
   },
 });
 
-// 🔑 Track number of users per room
+//  Track number of users per room
 const rooms = new Map();
 
 io.on("connection", (socket) => {
   console.log("User connected:", socket.id);
 
-  // 🔹 Join room
+  //  Join room
   socket.on("join-room", (roomId) => {
     socket.join(roomId);
 
@@ -32,31 +32,38 @@ io.on("connection", (socket) => {
 
     console.log(`Room ${roomId} count:`, rooms.get(roomId));
 
-    // 🔥 Start WebRTC ONLY when second user joins
+    //  Start WebRTC ONLY when second user joins
     if (rooms.get(roomId) === 2) {
       console.log("🔥 EMITTING room-ready");
       socket.to(roomId).emit("room-ready");
     }
   });
 
-  // 🔹 Forward offer
+  //  Forward offer
   socket.on("offer", ({ roomId, offer }) => {
     socket.to(roomId).emit("offer", { offer });
   });
 
-  // 🔹 Forward answer
+  //  Forward answer
   socket.on("answer", ({ roomId, answer }) => {
     socket.to(roomId).emit("answer", { answer });
   });
 
-  // 🔹 Forward ICE candidates
+  // Forward ICE candidates
   socket.on("ice-candidate", ({ roomId, candidate }) => {
     socket.to(roomId).emit("ice-candidate", { candidate });
   });
 
-  // 🔹 Handle disconnect
+  //  Handle disconnect
   socket.on("disconnect", () => {
     console.log("User disconnected:", socket.id);
+
+    // leave room
+    socket.on("leave-room", (roomId) => {
+  socket.to(roomId).emit("user-left");
+  socket.leave(roomId);
+});
+
 
     for (const [roomId, count] of rooms.entries()) {
       if (count > 0) {
