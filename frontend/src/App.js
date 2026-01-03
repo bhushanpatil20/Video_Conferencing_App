@@ -23,6 +23,21 @@ const BACKEND_URL =
 
 
 export default function App() {
+  useEffect(() => {
+  const setAppHeight = () => {
+    const vh = window.innerHeight * 0.01;
+    document.documentElement.style.setProperty(
+      "--app-height",
+      `${vh * 100}px`
+    );
+  };
+
+  setAppHeight();
+  window.addEventListener("resize", setAppHeight);
+
+  return () => window.removeEventListener("resize", setAppHeight);
+}, []);
+
   const localVideoRef = useRef(null);
   const remoteVideoRef = useRef(null);
   const localStreamRef = useRef(null);
