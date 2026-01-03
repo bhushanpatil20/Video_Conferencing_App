@@ -249,12 +249,23 @@ body {
   }
 
   /* Controls bar */
-  .controls {
+  /* .controls {
     bottom: 15px;
     padding: 10px;
     gap: 10px;
-  }
+  } */
 
+  /* Controls bar */
+  .controls {
+    /* Use calc to respect the phone's safe area (gesture bar) + extra space */
+    bottom: calc(env(safe-area-inset-bottom) + 30px); 
+    padding: 10px;
+    gap: 20px; /* Increased gap slightly for better touch targets */
+    display: flex; /* Ensures buttons stay in a row */
+    justify-content: center; /* Centers the buttons */
+    width: 100%; /* Ensures the container spans width for proper centering */
+  }
+  
   .controls button {
     padding: 10px 14px;
     font-size: 14px;
@@ -267,13 +278,4 @@ body {
   }
 }
 
-
-/* media query */
-
-/* Extra lift for short mobile screens */
-@media (max-width: 768px) and (max-height: 700px) {
-  .controls {
-    bottom: 80px !important;
-  }
-}
 
