@@ -1,3 +1,15 @@
+* {
+  box-sizing: border-box;
+  margin: 0;
+  padding: 0;
+}
+
+html, body, #root {
+  width: 100%;
+  height: 100%;
+  overflow: hidden;
+}
+
 html, body {
   height: 100%;
 }
@@ -52,7 +64,9 @@ body {
 
 /* APP WRAPPER */
 .app {
+  width: 100vw;
   height: 100vh;
+  background: linear-gradient(180deg, #0f172a, #020617);
   display: flex;
   justify-content: center;
   align-items: center;
@@ -113,9 +127,9 @@ body {
 
 /* CALL CONTAINER */
 .call-container {
+  position: relative;
   width: 100%;
   height: 100%;
-  position: relative;
 }
 
 /* VIDEOS */
@@ -125,8 +139,8 @@ body {
 }
 
 .remote-video {
-  width: 100%;
-  height: 100%;
+  width: 100vw;
+  height: 100vh;
   object-fit: cover;
   background: black;
 }
@@ -134,9 +148,9 @@ body {
 .local-video {
   position: absolute;
   bottom: 90px;
-  right: 20px;
-  width: 220px;
-  height: 150px;
+  right: 16px;
+  width: 110px;
+  height: 160px;
   object-fit: cover;
   border-radius: 12px;
   border: 2px solid #3b82f6;
@@ -147,14 +161,14 @@ body {
 .controls {
   position: absolute;
   bottom: 20px;
-  width: 100%;
+  left: 50%;
+  transform: translateX(-50%);
   display: flex;
-  justify-content: center;
-  gap: 16px;
-
-  animation: slideUp 0.4s ease-out;
+  gap: 12px;
+  z-index: 10;
 }
 
+/*animation: slideUp 0.4s ease-out;*/
 @keyframes slideUp {
   from {
     transform: translateY(20px);
