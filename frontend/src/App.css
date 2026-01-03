@@ -266,3 +266,14 @@ body {
     min-height: -webkit-fill-available;
   }
 }
+
+
+/* media query */
+
+/* Extra lift for short mobile screens */
+@media (max-width: 768px) and (max-height: 700px) {
+  .controls {
+    bottom: 80px !important;
+  }
+}
+
