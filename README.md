@@ -9,11 +9,8 @@ This project is being developed as a placement-oriented system design and full-s
 
 ## 🚀 Features
 - One-to-one video calling
-- Group video calls (planned)
 - Audio / Video communication
-- Screen sharing (planned)
-- Real-time signaling using WebSockets
-- Client-side recording (planned)
+- Real-time signaling using WebSocket
 
 ---
 
