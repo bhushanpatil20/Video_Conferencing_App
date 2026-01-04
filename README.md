@@ -1,8 +1,7 @@
 # Video_Conferencing_App
-A WebRTC-based video conferencing application supporting one-to-one and group calls with screen sharing.
+A WebRTC-based video conferencing application supporting one-to-one conference 
 
 # Video Conferencing App
-
 A real-time video conferencing application built using WebRTC and Socket.IO.  
 This project is being developed as a placement-oriented system design and full-stack project.
 
